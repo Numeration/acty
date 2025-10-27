@@ -78,7 +78,8 @@ mod actor;
 mod inbox;
 mod outbox;
 mod start;
+mod launch;
 
 pub use {
-    actor::Actor, inbox::Inbox, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::ActorExt,
+    actor::Actor, inbox::Inbox, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::ActorExt, launch::Launch,
 };

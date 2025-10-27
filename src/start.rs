@@ -1,8 +1,14 @@
 use tokio::task::JoinHandle;
 use tokio_stream::wrappers::{ReceiverStream, UnboundedReceiverStream};
 use crate::{Actor, BoundedOutbox, Inbox, UnboundedOutbox};
+use crate::launch::Launch;
 
 pub trait ActorExt<T: Send + 'static>: Actor<T> {
+    
+    fn with<L: Launch<T>>(self, launch: L)  -> L::Result {
+        launch.launch(self)
+    }
+    
     fn start_with(self, inbox: impl Inbox<Item = T>) -> JoinHandle<()> {
         tokio::spawn(self.run(inbox))
     }
