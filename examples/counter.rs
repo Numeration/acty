@@ -5,16 +5,15 @@
 //! - 异步处理消息
 //! - 指令的同步回传（oneshot channel）
 //! - 启动和结束 Actor
-use std::pin::pin;
+use acty::{Actor, ActorExt, Inbox};
 use futures::StreamExt;
-use acty::{Actor, Inbox, ActorExt};
+use std::pin::pin;
 
 /// 计数器 Actor
 ///
 /// 该 Actor 内部维护计数值 `value`，但结构体本身不包含字段。
 /// 状态在 `run` 方法中异步维护。
 struct Counter;
-
 
 /// Counter Actor 的消息类型
 ///
@@ -37,7 +36,7 @@ enum CounterMessage {
 /// - 根据消息更新状态或通过 oneshot 返回结果
 impl Actor for Counter {
     type Message = CounterMessage;
-    
+
     async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
         // 将 inbox 固定在栈上以便异步迭代
         let mut inbox = pin!(inbox);

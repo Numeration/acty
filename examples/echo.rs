@@ -5,9 +5,9 @@
 //! - 处理 Inbox 消息
 //! - 发送消息到 Actor
 //! - 正确释放 Outbox
-use std::pin::pin;
+use acty::{Actor, ActorExt, Inbox};
 use futures::StreamExt;
-use acty::{Actor, Inbox, ActorExt};
+use std::pin::pin;
 
 /// 一个最简单的 Echo Actor
 ///

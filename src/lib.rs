@@ -32,7 +32,7 @@
 //! // 实现 actor 特征
 //! impl Actor for MyActor {
 //!     type Message = String;
-//! 
+//!
 //!     async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
 //!         // 将 inbox 固定在当前栈上以便使用 StreamExt::next()
 //!         // 详细请见 examples/echo.rs
@@ -78,10 +78,11 @@
 
 mod actor;
 mod inbox;
+mod launch;
 mod outbox;
 mod start;
-mod launch;
 
 pub use {
-    actor::Actor, inbox::Inbox, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::ActorExt, launch::Launch,
+    actor::Actor, inbox::Inbox, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox,
+    start::ActorExt,
 };
