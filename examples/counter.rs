@@ -35,8 +35,10 @@ enum CounterMessage {
 ///
 /// - 遍历 inbox 处理消息
 /// - 根据消息更新状态或通过 oneshot 返回结果
-impl Actor<CounterMessage> for Counter {
-    async fn run(self, inbox: impl Inbox<Item = CounterMessage>) {
+impl Actor for Counter {
+    type Message = CounterMessage;
+    
+    async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
         // 将 inbox 固定在栈上以便异步迭代
         let mut inbox = pin!(inbox);
 

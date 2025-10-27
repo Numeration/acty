@@ -30,8 +30,10 @@
 //! }
 //!
 //! // 实现 actor 特征
-//! impl Actor<String> for MyActor {
-//!     async fn run(self, inbox: impl Inbox<Item = String>) {
+//! impl Actor for MyActor {
+//!     type Message = String;
+//! 
+//!     async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
 //!         // 将 inbox 固定在当前栈上以便使用 StreamExt::next()
 //!         // 详细请见 examples/echo.rs
 //!         let mut inbox = pin!(inbox);
