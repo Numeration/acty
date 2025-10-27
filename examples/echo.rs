@@ -7,7 +7,7 @@
 //! - 正确释放 Outbox
 use std::pin::pin;
 use futures::StreamExt;
-use acty::{Actor, Inbox, Start};
+use acty::{Actor, Inbox, ActorExt};
 
 /// 一个最简单的 Echo Actor
 ///

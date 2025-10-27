@@ -7,7 +7,7 @@
 //! - 启动和结束 Actor
 use std::pin::pin;
 use futures::StreamExt;
-use acty::{Actor, Inbox, Start};
+use acty::{Actor, Inbox, ActorExt};
 
 /// 计数器 Actor
 ///
