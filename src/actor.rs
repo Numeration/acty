@@ -1,4 +1,4 @@
-use crate::inbox::Inbox;
+use crate::Inbox;
 
 #[trait_variant::make(Send)]
 pub trait Actor<T>: Sized + 'static {
