@@ -2,8 +2,7 @@ use crate::Actor;
 
 pub trait Launch: Send + Sized + 'static {
     type Message;
+    type Result<A>;
 
-    type Result;
-
-    fn launch(self, actor: impl Actor<Message = Self::Message>) -> Self::Result;
+    fn launch<A: Actor<Message = Self::Message>>(self, actor: A) -> Self::Result<A>;
 }
