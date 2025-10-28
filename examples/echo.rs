@@ -5,9 +5,9 @@
 //! - 处理 Inbox 消息
 //! - 发送消息到 Actor
 //! - 正确释放 Outbox
-use std::pin::pin;
+use acty::{Actor, ActorExt, Inbox};
 use futures::StreamExt;
-use acty::{Actor, Inbox, Start};
+use std::pin::pin;
 
 /// 一个最简单的 Echo Actor
 ///
@@ -18,8 +18,10 @@ struct Echo;
 /// 实现 `Actor` trait，消息类型为 `String`
 ///
 /// 当 Inbox 收到消息时，会逐条打印到标准输出。
-impl Actor<String> for Echo {
-    async fn run(self, inbox: impl Inbox<Item = String>) {
+impl Actor for Echo {
+    type Message = String;
+
+    async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
         // 将 inbox 固定在栈上，以便异步迭代。
         // 如果需要跨函数传递，可使用 Box::pin 将其固定到堆上（带一点分配开销）。
         let mut inbox = pin!(inbox);

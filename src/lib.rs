@@ -5,7 +5,7 @@
 //! ## 核心概念
 //!
 //! - **Actor**: 只需实现 [Actor] trait 即可。
-//! - **Start**: 所有 Actor 自动实现 [Start]，用于快速启动。
+//! - **Start**: 所有 Actor 自动实现 [ActorExt]，可用于快速启动。
 //! - **Inbox / Outbox**: Actor 通过 [inbox] 接收消息，[outbox] 用于发送消息。
 //! - **生命周期**: 发送方负责制，Actor 会在无法再接收消息时自然结束。
 //!
@@ -21,7 +21,7 @@
 //! use std::pin::pin;
 //! use std::fmt::Write;
 //! use futures::StreamExt;
-//! use acty::{Actor, Start, Inbox};
+//! use acty::{Actor, ActorExt, Inbox};
 //!
 //! // 定义 actor 对象
 //! struct MyActor {
@@ -30,8 +30,10 @@
 //! }
 //!
 //! // 实现 actor 特征
-//! impl Actor<String> for MyActor {
-//!     async fn run(self, inbox: impl Inbox<Item = String>) {
+//! impl Actor for MyActor {
+//!     type Message = String;
+//!
+//!     async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
 //!         // 将 inbox 固定在当前栈上以便使用 StreamExt::next()
 //!         // 详细请见 examples/echo.rs
 //!         let mut inbox = pin!(inbox);
@@ -76,9 +78,11 @@
 
 mod actor;
 mod inbox;
+mod launch;
 mod outbox;
 mod start;
 
 pub use {
-    actor::Actor, inbox::Inbox, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::Start,
+    actor::Actor, inbox::Inbox, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox,
+    start::ActorExt,
 };
