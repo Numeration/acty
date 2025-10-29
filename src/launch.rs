@@ -1,6 +1,6 @@
 use crate::Actor;
 
-pub trait Launch: Send + Sized + 'static {
+pub trait Launch: Send + Sized {
     type Message;
     type Result<A>;
 

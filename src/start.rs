@@ -8,7 +8,7 @@ pub trait ActorExt: Actor {
         launch.launch(self)
     }
 
-    fn start_with(self, inbox: impl Inbox<Item = Self::Message>) -> JoinHandle<()> {
+    fn start_with(self, inbox: impl Inbox<Item = Self::Message> + 'static) -> JoinHandle<()> {
         tokio::spawn(self.run(inbox))
     }
 
