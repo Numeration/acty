@@ -1,5 +1,5 @@
 use futures::Stream;
 
-pub trait Inbox: Stream + Send + 'static {}
+pub trait Inbox: Stream + Send {}
 
-impl<S: Stream + Send + 'static> Inbox for S {}
+impl<S: Stream + Send> Inbox for S {}
