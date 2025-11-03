@@ -4,7 +4,7 @@ use tokio::task::JoinHandle;
 use tokio_stream::wrappers::{ReceiverStream, UnboundedReceiverStream};
 
 pub trait ActorExt: Actor {
-    fn with<'msg, L: Launch<Message<'msg> = Self::Message<'msg>>>(
+    fn with<L: for<'msg> Launch<Message<'msg> = Self::Message<'msg>>>(
         self,
         launch: L,
     ) -> L::Result<Self> {
