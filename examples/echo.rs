@@ -19,9 +19,9 @@ struct Echo;
 ///
 /// 当 Inbox 收到消息时，会逐条打印到标准输出。
 impl Actor for Echo {
-    type Message<'msg> = String;
+    type Message = String;
 
-    async fn run<'msg>(self, inbox: impl Inbox<Item = Self::Message<'msg>>) {
+    async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
         // 将 inbox 固定在栈上，以便异步迭代。
         // 如果需要跨函数传递，可使用 Box::pin 将其固定到堆上（带一点分配开销）。
         let mut inbox = pin!(inbox);
