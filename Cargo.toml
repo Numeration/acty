@@ -1,6 +1,6 @@
 [package]
 name = "acty"
-version = "0.5.2"
+version = "0.6.0"
 edition = "2024"
 authors = ["Numeration<boxed87@outlook.com>"]
 description = "A lightweight, async actor framework built on Tokio."
