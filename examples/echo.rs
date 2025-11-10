@@ -47,5 +47,5 @@ async fn main() {
 
     // 解除 outbox 与 actor 的绑定，
     // 确保 actor 收到所有消息后自然结束
-    echo.detach().await;
+    echo.close().await;
 }

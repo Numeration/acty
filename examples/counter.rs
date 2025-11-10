@@ -76,5 +76,5 @@ async fn main() {
     println!("count: {}", tx.await.unwrap());
 
     // 解除 outbox 与 Actor 的绑定，确保 Actor 结束
-    counter.detach().await;
+    counter.close().await;
 }

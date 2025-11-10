@@ -1,4 +1,5 @@
-use std::ops::{Deref, DerefMut};
+use crate::close::AsyncClose;
+use std::ops::Deref;
 use std::sync::Arc;
 use tokio::task::JoinHandle;
 
@@ -22,69 +23,33 @@ impl ActorHandle {
 }
 
 #[derive(Debug, Clone)]
-pub struct BoundedOutbox<T> {
-    sender: tokio::sync::mpsc::Sender<T>,
-    join: ActorHandle,
+pub struct Outbox<S> {
+    sender: S,
+    handle: ActorHandle,
 }
 
-impl<T> BoundedOutbox<T> {
-    pub fn new(sender: tokio::sync::mpsc::Sender<T>, join_handle: JoinHandle<()>) -> Self {
-        Self {
-            sender,
-            join: ActorHandle::new(join_handle),
-        }
-    }
-
-    pub async fn detach(self) {
-        drop(self.sender);
-        self.join.wait_for_completion().await
+impl<S> Outbox<S> {
+    pub fn new(sender: S, join_handle: JoinHandle<()>) -> Self {
+        Self { sender, handle: ActorHandle::new(join_handle) }
     }
 }
 
-impl<T> Deref for BoundedOutbox<T> {
-    type Target = tokio::sync::mpsc::Sender<T>;
+impl<S: AsyncClose> Outbox<S> {
+    pub async fn close(self) {
+        self.sender.close().await;
+        self.handle.wait_for_completion().await;
+    }
+}
+
+impl<S> Deref for Outbox<S> {
+
+    type Target = S;
 
     fn deref(&self) -> &Self::Target {
         &self.sender
     }
 }
 
-impl<T> DerefMut for BoundedOutbox<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.sender
-    }
-}
+pub type BoundedOutbox<T> = Outbox<tokio::sync::mpsc::Sender<T>>;
 
-#[derive(Debug, Clone)]
-pub struct UnboundedOutbox<T> {
-    sender: tokio::sync::mpsc::UnboundedSender<T>,
-    join: ActorHandle,
-}
-
-impl<T> UnboundedOutbox<T> {
-    pub fn new(sender: tokio::sync::mpsc::UnboundedSender<T>, join_handle: JoinHandle<()>) -> Self {
-        Self {
-            sender,
-            join: ActorHandle::new(join_handle),
-        }
-    }
-
-    pub async fn detach(self) {
-        drop(self.sender);
-        self.join.wait_for_completion().await
-    }
-}
-
-impl<T> Deref for UnboundedOutbox<T> {
-    type Target = tokio::sync::mpsc::UnboundedSender<T>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.sender
-    }
-}
-
-impl<T> DerefMut for UnboundedOutbox<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.sender
-    }
-}
+pub type UnboundedOutbox<T> = Outbox<tokio::sync::mpsc::UnboundedSender<T>>;
