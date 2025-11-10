@@ -6,7 +6,7 @@
 
 **Acty** is a high-performance, extremely lightweight Actor framework built on top of [Tokio](https://tokio.rs/). It aims to provide a simple, safe, and ergonomic concurrency model for the Rust asynchronous ecosystem.
 
-## Core Philosophy ✨
+## Core Philosophy
 
 Acty's design revolves around several core principles:
 
@@ -15,7 +15,7 @@ Acty's design revolves around several core principles:
 *   **State Isolation**: The Actor's state exists as local variables within its core `run` method, rather than as struct fields. This makes state management clear and simple, and inherently prevents data races.
 *   **Seamless Tokio Integration**: Acty is built upon fundamental Tokio components like `mpsc` channels and asynchronous `Stream`s, allowing for easy composition with any library in the Tokio ecosystem (e.g., `hyper`, `reqwest`, `tonic`).
 
-## Features 🚀
+## Features
 
 *   **Lightweight**: The core API consists of only a few key traits (`Actor`, `ActorExt`, `AsyncClose`).
 *   **Type Safe**: Leverages Rust's type system to ensure correct Actor message passing.
@@ -23,7 +23,7 @@ Acty's design revolves around several core principles:
 *   **Supports Bounded and Unbounded Channels**: Easily launch Actors using `.start()` (unbounded) or `.start_with_mailbox_capacity(n)` (bounded), with native back-pressure support.
 *   **Extensible Launch Strategy**: The `Launch` trait allows for customizing the Actor's startup process (e.g., using different channel implementations or logging).
 
-## Quick Start ⚡
+## Quick Start
 
 Let's create a simple counter Actor.
 
