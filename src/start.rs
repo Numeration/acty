@@ -1,19 +1,20 @@
+use futures::Stream;
 use crate::launch::Launch;
-use crate::{Actor, BoundedOutbox, Inbox, UnboundedOutbox};
+use crate::{Actor, BoundedOutbox, UnboundedOutbox};
 use tokio::task::JoinHandle;
 use tokio_stream::wrappers::{ReceiverStream, UnboundedReceiverStream};
 
 pub trait ActorExt: Actor {
-    fn with<L>(self, launch: L) -> L::Result<Self> 
+    fn with<L>(self, launch: L) -> L::Result<Self>
     where
         L: Launch<Message = Self::Message>
     {
         launch.launch(self)
     }
 
-    fn start_with<I>(self, inbox: I) -> JoinHandle<()> 
-    where 
-        I: Inbox<Item = Self::Message> + 'static
+    fn start_with<I>(self, inbox: I) -> JoinHandle<()>
+    where
+        I: Stream<Item = Self::Message> + Send + 'static
     {
         tokio::spawn(self.run(inbox))
     }
