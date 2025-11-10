@@ -77,12 +77,11 @@
 //! 更多示例请看 examples 目录。
 
 mod actor;
+mod close;
 mod launch;
 mod outbox;
 mod start;
-mod close;
 
 pub use {
-    actor::Actor, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox,
-    start::ActorExt,
+    actor::Actor, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::ActorExt,
 };

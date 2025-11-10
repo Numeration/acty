@@ -1,4 +1,3 @@
-
 #[trait_variant::make(Send)]
 pub trait AsyncClose {
     async fn close(self);
