@@ -6,7 +6,7 @@
 //!
 //! - **Actor**: 只需实现 [Actor] trait 即可。
 //! - **Start**: 所有 Actor 自动实现 [ActorExt]，可用于快速启动。
-//! - **Inbox / Outbox**: Actor 通过 [inbox] 接收消息，[outbox] 用于发送消息。
+//! - **Inbox / Outbox**: Actor 通过 [futures::Stream] 接收消息，[outbox] 用于发送消息。
 //! - **生命周期**: 发送方负责制，Actor 会在无法再接收消息时自然结束。
 //!
 //! ## 协作式取消
@@ -20,8 +20,8 @@
 //!
 //! use std::pin::pin;
 //! use std::fmt::Write;
-//! use futures::StreamExt;
-//! use acty::{Actor, ActorExt, Inbox};
+//! use futures::{Stream, StreamExt};
+//! use acty::{Actor, ActorExt};
 //!
 //! // 定义 actor 对象
 //! struct MyActor {
@@ -33,7 +33,7 @@
 //! impl Actor for MyActor {
 //!     type Message = String;
 //!
-//!     async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
+//!     async fn run(self, inbox: impl Stream<Item = Self::Message> + Send) {
 //!         // 将 inbox 固定在当前栈上以便使用 StreamExt::next()
 //!         // 详细请见 examples/echo.rs
 //!         let mut inbox = pin!(inbox);
@@ -64,7 +64,7 @@
 //!     my_actor.send("It's a good day today.".to_string());
 //!     my_actor.send("Let's have some tea first.".to_string());
 //!     // 确保 outbox 被释放，触发 actor 结束
-//!     my_actor.detach().await;
+//!     my_actor.close().await;
 //!
 //!     // 获得 actor 的运行结果
 //!     assert_eq!(
@@ -77,12 +77,11 @@
 //! 更多示例请看 examples 目录。
 
 mod actor;
-mod inbox;
+mod close;
 mod launch;
 mod outbox;
 mod start;
 
 pub use {
-    actor::Actor, inbox::Inbox, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox,
-    start::ActorExt,
+    actor::Actor, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::ActorExt,
 };

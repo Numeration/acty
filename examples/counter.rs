@@ -5,8 +5,8 @@
 //! - 异步处理消息
 //! - 指令的同步回传（oneshot channel）
 //! - 启动和结束 Actor
-use acty::{Actor, ActorExt, Inbox};
-use futures::StreamExt;
+use acty::{Actor, ActorExt};
+use futures::{Stream, StreamExt};
 use std::pin::pin;
 
 /// 计数器 Actor
@@ -37,7 +37,7 @@ enum CounterMessage {
 impl Actor for Counter {
     type Message = CounterMessage;
 
-    async fn run(self, inbox: impl Inbox<Item = Self::Message>) {
+    async fn run(self, inbox: impl Stream<Item = Self::Message> + Send) {
         // 将 inbox 固定在栈上以便异步迭代
         let mut inbox = pin!(inbox);
 
@@ -76,5 +76,5 @@ async fn main() {
     println!("count: {}", tx.await.unwrap());
 
     // 解除 outbox 与 Actor 的绑定，确保 Actor 结束
-    counter.detach().await;
+    counter.close().await;
 }
