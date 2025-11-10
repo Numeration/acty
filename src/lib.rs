@@ -1,80 +1,81 @@
 //! # Acty
 //!
-//! Acty 旨在基于 tokio 实现一个高性能且非常轻量的 actor 框架。
+//! Acty is a lightweight and high-performance Actor framework built on top of Tokio.
+//! It adheres to the core philosophies of "everything is an Actor" and "sender-driven lifecycle,"
+//! aiming to provide a simple, safe, and easy-to-use concurrency model.
 //!
-//! ## 核心概念
+//! ## Core Concepts
 //!
-//! - **Actor**: 只需实现 [Actor] trait 即可。
-//! - **Start**: 所有 Actor 自动实现 [ActorExt]，可用于快速启动。
-//! - **Inbox / Outbox**: Actor 通过 [futures::Stream] 接收消息，[outbox] 用于发送消息。
-//! - **生命周期**: 发送方负责制，Actor 会在无法再接收消息时自然结束。
+//! - **Actor**: Any type that implements the [`Actor`] trait is an Actor. Its core is the `run` method, which contains all the business logic and state management.
+//! - **Lifecycle**: An Actor's lifecycle is determined by its message senders (the `Outbox`). When all associated `Outbox` instances are dropped, the Actor's message channel (`inbox`) closes, and the Actor task gracefully terminates. This design eliminates the complexity of manually sending "stop" messages.
+//! - **Messaging**: By calling the [`ActorExt::start`] method to launch an Actor, you receive an [`UnboundedOutbox`] (or [`BoundedOutbox`]). This `Outbox` is the sole handle for sending messages to the Actor.
+//! - **State Management**: The Actor's state usually resides as local variables within the asynchronous scope of its `run` method, rather than as fields of the structure. This ensures cleaner state isolation and ownership management.
 //!
-//! ## 协作式取消
+//! ## Result Communication (Backchannel)
 //!
-//! 如果需要主动中断 Actor，可通过协作式取消通知发送方停止发送消息。
+//! An Actor can send its final computation result back to the caller through mechanisms like `oneshot` channels before its task ends.
 //!
-//! ## 回传结果
-//!
-//! Actor 可以在结束时通过回传钩子发送结果。示例：
+//! ### Example: An Actor that concatenates strings
 //! ```rust
-//!
 //! use std::pin::pin;
 //! use std::fmt::Write;
 //! use futures::{Stream, StreamExt};
-//! use acty::{Actor, ActorExt};
+//! use acty::{Actor, ActorExt, AsyncClose};
 //!
-//! // 定义 actor 对象
+//! // 1. Define the Actor structure. It holds a oneshot::Sender to return the result.
 //! struct MyActor {
-//!    // 结果回传钩子
 //!    result: tokio::sync::oneshot::Sender<String>,
 //! }
 //!
-//! // 实现 actor 特征
+//! // 2. Implement the Actor trait, defining the message type and core logic.
 //! impl Actor for MyActor {
 //!     type Message = String;
 //!
 //!     async fn run(self, inbox: impl Stream<Item = Self::Message> + Send) {
-//!         // 将 inbox 固定在当前栈上以便使用 StreamExt::next()
-//!         // 详细请见 examples/echo.rs
+//!         // Pin the inbox to the stack for asynchronous iteration.
 //!         let mut inbox = pin!(inbox);
 //!
-//!         // 初始化此 actor 的状态
+//!         // The Actor's internal state is defined and managed within the run method.
 //!         let mut article = String::new();
 //!         let mut count = 1;
 //!
-//!         // 处理 inbox 中的消息
+//!         // Loop through messages until the inbox closes.
 //!         while let Some(msg) = inbox.next().await {
 //!             write!(article, "part {}: {}\n", count, msg.as_str()).unwrap();
 //!             count += 1;
 //!         }
 //!
-//!         // 结束时将 article 通过回传钩子进行回传
-//!         self.result.send(article);
+//!         // When all Outboxes are dropped, the loop ends. Send the final result here.
+//!         // Sending might fail if the receiver has already given up waiting, so we ignore the error.
+//!         let _ = self.result.send(article);
 //!     }
 //! }
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!     // 创建结果回传钩子
+//!     // 3. Create the channel for receiving the result.
 //!     let (tx, rx) = tokio::sync::oneshot::channel();
-//!     // 初始化 actor
+//!
+//!     // 4. Instantiate and launch the Actor, getting the Outbox handle.
 //!     let my_actor = MyActor { result: tx }.start();
 //!
-//!     // 向 actor 发送消息
-//!     my_actor.send("It's a good day today.".to_string());
-//!     my_actor.send("Let's have some tea first.".to_string());
-//!     // 确保 outbox 被释放，触发 actor 结束
+//!     // 5. Send messages to the Actor. Ignore potential send errors caused by early shutdown.
+//!     my_actor.send("It's a good day today.".to_string()).unwrap_or(());
+//!     my_actor.send("Let's have some tea first.".to_string()).unwrap_or(());
+//!
+//!     // 6. Close the outbox. Since it's the last Outbox, this triggers the Actor's shutdown.
+//!     // .close().await waits for the Actor task to fully complete.
 //!     my_actor.close().await;
 //!
-//!     // 获得 actor 的运行结果
+//!     // 7. Wait for and retrieve the Actor's final execution result.
 //!     assert_eq!(
 //!         "part 1: It's a good day today.\npart 2: Let's have some tea first.\n",
-//!         rx.await.expect("Actor did not send result")
+//!         rx.await.expect("Actor task failed to send the result")
 //!     );
 //! }
 //! ```
 //!
-//! 更多示例请看 examples 目录。
+//! For more examples, please see the examples directory.
 
 mod actor;
 mod close;
@@ -83,5 +84,6 @@ mod outbox;
 mod start;
 
 pub use {
-    actor::Actor, launch::Launch, outbox::BoundedOutbox, outbox::UnboundedOutbox, start::ActorExt,
+    actor::Actor, close::AsyncClose, launch::Launch, outbox::BoundedOutbox,
+    outbox::UnboundedOutbox, start::ActorExt,
 };
