@@ -1,32 +1,34 @@
-//! Echo Actor 示例
+//! Echo Actor Example
 //!
-//! 该示例展示了如何实现一个最简单的 Actor，并演示以下功能：
-//! - 实现 Actor trait
-//! - 处理 Inbox 消息
-//! - 发送消息到 Actor
-//! - 正确释放 Outbox
-use acty::{Actor, ActorExt};
+//! This example demonstrates how to implement the simplest possible Actor,
+//! illustrating the following features:
+//! - Implementing the Actor trait
+//! - Processing Inbox messages
+//! - Sending messages to the Actor
+//! - Correctly releasing the Outbox
+use acty::{Actor, ActorExt, AsyncClose};
 use futures::{Stream, StreamExt};
 use std::pin::pin;
 
-/// 一个最简单的 Echo Actor
+/// The simplest Echo Actor
 ///
-/// 该 Actor 处理类型为 `String` 的消息，并将其打印到标准输出。
-/// 注意：该 Actor 没有状态字段，仅展示最基本的用法。
+/// This Actor processes messages of type `String` and prints them to standard output.
+/// Note: This Actor has no state fields, demonstrating only the basic usage.
 struct Echo;
 
-/// 实现 `Actor` trait，消息类型为 `String`
+/// Implements the `Actor` trait, with message type `String`
 ///
-/// 当 Inbox 收到消息时，会逐条打印到标准输出。
+/// When a message is received in the Inbox, it is printed line by line to standard output.
 impl Actor for Echo {
     type Message = String;
 
     async fn run(self, inbox: impl Stream<Item = Self::Message> + Send) {
-        // 将 inbox 固定在栈上，以便异步迭代。
-        // 如果需要跨函数传递，可使用 Box::pin 将其固定到堆上（带一点分配开销）。
+        // Pin the inbox to the stack for asynchronous iteration.
+        // If it needed to be passed across function boundaries, Box::pin could be used
+        // to pin it to the heap (with a small allocation overhead).
         let mut inbox = pin!(inbox);
 
-        // 异步遍历 inbox 中的每条消息
+        // Asynchronously iterate through every message in the inbox
         while let Some(msg) = inbox.next().await {
             println!("echo: {}", msg);
         }
@@ -35,17 +37,17 @@ impl Actor for Echo {
 
 #[tokio::main]
 async fn main() {
-    // 启动 actor 并获得与之绑定的 outbox
+    // Launch the actor and obtain the associated outbox
     let echo = Echo.start();
 
-    // 向 Actor 发送消息
-    // send 返回 Result，当 Actor 已关闭时会返回 Err
-    // 这里使用 unwrap_or(()) 忽略可能的错误
+    // Send messages to the Actor
+    // send returns a Result, returning Err if the Actor has shut down
+    // We use unwrap_or(()) here to ignore potential errors
     echo.send("Hello".to_string()).unwrap_or(());
     echo.send("World".to_string()).unwrap_or(());
     echo.send("!".to_string()).unwrap_or(());
 
-    // 解除 outbox 与 actor 的绑定，
-    // 确保 actor 收到所有消息后自然结束
+    // Close the outbox, unbinding it from the actor.
+    // This ensures the actor finishes naturally after processing all messages.
     echo.close().await;
 }
