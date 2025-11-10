@@ -3,18 +3,18 @@ use std::sync::Arc;
 use tokio::task::JoinHandle;
 
 #[derive(Debug, Clone)]
-pub struct Join {
+pub struct ActorHandle {
     join_handle: Arc<JoinHandle<()>>,
 }
 
-impl Join {
+impl ActorHandle {
     fn new(join_handle: JoinHandle<()>) -> Self {
         Self {
             join_handle: Arc::new(join_handle),
         }
     }
 
-    async fn detach(mut self) {
+    async fn wait_for_completion(mut self) {
         if let Some(join_handle) = Arc::get_mut(&mut self.join_handle) {
             join_handle.await.unwrap();
         }
@@ -24,20 +24,20 @@ impl Join {
 #[derive(Debug, Clone)]
 pub struct BoundedOutbox<T> {
     sender: tokio::sync::mpsc::Sender<T>,
-    join: Join,
+    join: ActorHandle,
 }
 
 impl<T> BoundedOutbox<T> {
     pub fn new(sender: tokio::sync::mpsc::Sender<T>, join_handle: JoinHandle<()>) -> Self {
         Self {
             sender,
-            join: Join::new(join_handle),
+            join: ActorHandle::new(join_handle),
         }
     }
 
     pub async fn detach(self) {
         drop(self.sender);
-        self.join.detach().await
+        self.join.wait_for_completion().await
     }
 }
 
@@ -58,20 +58,20 @@ impl<T> DerefMut for BoundedOutbox<T> {
 #[derive(Debug, Clone)]
 pub struct UnboundedOutbox<T> {
     sender: tokio::sync::mpsc::UnboundedSender<T>,
-    join: Join,
+    join: ActorHandle,
 }
 
 impl<T> UnboundedOutbox<T> {
     pub fn new(sender: tokio::sync::mpsc::UnboundedSender<T>, join_handle: JoinHandle<()>) -> Self {
         Self {
             sender,
-            join: Join::new(join_handle),
+            join: ActorHandle::new(join_handle),
         }
     }
 
     pub async fn detach(self) {
         drop(self.sender);
-        self.join.detach().await
+        self.join.wait_for_completion().await
     }
 }
 
