@@ -1,6 +1,7 @@
 # Acty: 一个为 Tokio 设计的轻量级 Actor 框架
 
 [English](./README.md) | **简体中文**
+
 [![Crates.io](https://img.shields.io/crates/v/acty.svg)](https://crates.io/crates/acty)
 [![Docs.rs](https://docs.rs/acty/badge.svg)](https://docs.rs/acty)
 
