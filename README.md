@@ -1,6 +1,7 @@
 # Acty: A Lightweight Actor Framework for Tokio
 
 **English** | [简体中文](./README.cn.md)
+
 [![Crates.io](https://img.shields.io/crates/v/acty.svg)](https://crates.io/crates/acty)
 [![Docs.rs](https://docs.rs/acty/badge.svg)](https://docs.rs/acty)
 
