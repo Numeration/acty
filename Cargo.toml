@@ -1,10 +1,10 @@
 [package]
 name = "acty"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 authors = ["Numeration<boxed87@outlook.com>"]
 description = "A lightweight, async actor framework built on Tokio."
-license-file = "LICENSE"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/Numeration/acty"
 readme = "README.md"
 documentation = "https://docs.rs/acty"
