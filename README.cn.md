@@ -125,6 +125,6 @@ async fn main() {
 
 ## 许可证
 
-本项目采用 [Apache 2.0 许可证](./LICENSE)。
+本项目采用 [Apache 2.0 许可证](LICENSE-APACHE)。
 
 ---
