@@ -125,4 +125,7 @@ Contributions in any form are welcome! Whether it's submitting issues, creating 
 
 ## License
 
-This project is licensed under the [Apache 2.0 License](LICENSE-APACHE).
+This project is distributed under either the MIT license or the Apache 2.0 license, at your option:
+
+- [MIT License](LICENSE-MIT)
+- [Apache License 2.0](LICENSE-APACHE)
